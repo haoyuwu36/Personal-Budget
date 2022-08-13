@@ -1,6 +1,12 @@
 const express = require('express');
 const app = express();
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
+const envRouter = require('./envRouter');
+app.use('/api', envRouter);
+
 PORT = process.env.PORT || 3000;
 
 if (!module.parent) { 
