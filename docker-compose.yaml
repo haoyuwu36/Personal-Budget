@@ -1,26 +1,36 @@
-version: "3.8"
+version: "3.9"
 
 services:
   app:
-    image: node:12-alpine
-    command: sh -c "npm install && npm run"
+    build: ./code
+    image: budget-script
     ports:
       - 3000:3000
     working_dir: /app
     volumes:
-      - ./:/app
+      - ./code:/app:Z
     environment:
+      POSTGRES_HOST: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: budgets
+      POSTGRES_DB: postgres
+    depends_on: 
+      postgres:
+        condition: service_healthy
 
   postgres:
     image: postgres
-    volumes:
-      - pg-budget-data:/var/lib/postgres
+    restart: always
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
-      POTGRES_DB: budgets
-
-volumes:
-  pg-budget-data:
+      POSTGRES_DB: postgres
+    ports:
+      - 6000:5432
+    volumes:
+      - ./data/data.sql:/docker-entrypoint-initdb.d/data.sql:Z
+    healthcheck:
+      test: pg_isready -U postgres 
+      interval: 1s
+      timeout: 5s
+      retries: 5
